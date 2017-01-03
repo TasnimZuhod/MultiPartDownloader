@@ -89,6 +89,7 @@ public class Reader {
       * @throws Exception 
       */
      public void readManifest(String maniLocation) throws IOException, Exception{
+        this.segUrlsArr = new ArrayList<>();
         Segment segmentUrlObj;
         Scanner bufferReader;
         try{
@@ -96,49 +97,30 @@ public class Reader {
             bufferReader = new Scanner(new FileReader(url));
             String inputLine, prev = "";
             while(bufferReader.hasNext()){
-                boolean duplicate = false;
                 inputLine = bufferReader.nextLine();
                 
-                segmentUrlObj = new Segment();
+                if(inputLine.equals("**")){
+                    prev = inputLine;
+                    continue;
+                }
                 
-                segmentUrlObj.setSegmentName(inputLine);
-                
-                if(!prev.equals("")){
-                    duplicate = checkAlternative(prev, segmentUrlObj.getSegmentName());
-                    if(duplicate)
-                        segUrlsArr.get(segUrlsArr.size() - 1).setSegmentURL(inputLine);
-                } 
-                if(prev.equals("") || !duplicate){
-                    prev = segmentUrlObj.getSegmentName();
+                if(prev.equals("") || prev.equals("**")){
+                    
+                    segmentUrlObj = new Segment();
                     
                     segmentUrlObj.setSegmentURL(inputLine);
                     
                     segUrlsArr.add(segmentUrlObj);
-                }
+                    
+                } else {
+                    segUrlsArr.get(segUrlsArr.size() - 1).setSegmentURL(inputLine);
+                } 
+                prev = inputLine;
             }
             bufferReader.close();
         } catch(FileNotFoundException e){
             throw new Exception("Cannot read the Manifest.txt file", e);
-        }prints();
-    }
-     
-    void prints(){
-        for(int i=0; i<segUrlsArr.size(); i++){
-            System.out.println("MANIFEST NAME "+ segUrlsArr.get(i).getSegmentName());
-            for(int j=0; j<segUrlsArr.get(i).getSegmentURL().size(); j++){
-                System.out.println("MANIFEST URL "+ segUrlsArr.get(i).getSegmentURL().get(j));
-            }
         }
-    }
- 
-    /**
-     * Check if the two URLs are for the same segment that available in different location
-     * @param previous: The previous segment URL
-     * @param current: The current segment URL
-     * @return true if the current URL is an alternative for the previous one
-     */
-    private boolean checkAlternative(String previous, String current){
-        return previous.equals(current);
     }
      
 }
